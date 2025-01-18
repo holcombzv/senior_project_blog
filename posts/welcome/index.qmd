@@ -1,6 +1,6 @@
 ---
-title: "Welcome To My Blog"
-author: "Tristan O'Malley"
+title: "Test Post"
+author: "Me"
 date: "2025-01-14"
 categories: [news]
 ---

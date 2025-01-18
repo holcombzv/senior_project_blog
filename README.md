@@ -1,1 +1,0 @@
-# Zach Holcomb's Blog
