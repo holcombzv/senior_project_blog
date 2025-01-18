@@ -1,1 +1,1 @@
-# senior_project_blog
+# Zach Holcomb's Blog
