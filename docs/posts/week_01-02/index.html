@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Zach Holcomb">
+<meta name="dcterms.date" content="2025-01-21">
 
-<title>senior_project_blog - Zach Holcomb Project Proposal</title>
+<title>senior_project_blog - Week 1-2: Proposal and First Steps</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +21,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -104,14 +140,30 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Zach Holcomb Project Proposal</h1>
-                      </div>
+      <h1 class="title">Week 1-2: Proposal and First Steps</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">code</div>
+                <div class="quarto-category">analysis</div>
+              </div>
+                  </div>
   </div>
     
   
   <div class="quarto-title-meta">
 
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Zach Holcomb </p>
+            </div>
+    </div>
       
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">January 21, 2025</p>
+      </div>
+    </div>
     
       
     </div>
@@ -127,35 +179,54 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<section id="personal-background" class="level3">
-<h3 class="anchored" data-anchor-id="personal-background">Personal Background</h3>
-<p>I finished MATH 425 in spring 2024 and CS 450 and MATH 488 in fall 2024. After I graduate, I hope to get a job as a strategic analyst within 3-5 years. Working anywhere as a strategic analyst is what I would like to make into my career, though I would prefer to eventually get into law enforcement or government intelligence.</p>
-<p>School email: holcombzv@byui.edu</p>
+<section id="proposal-development" class="level3">
+<h3 class="anchored" data-anchor-id="proposal-development">Proposal Development</h3>
+<p>An observation that has stuck out to me while studying and practicing data science is how innaccessible most of the tools are for things like analysis or visualization. Locked behind steep learning curves and paywalls, tools that are available to companies and research groups are not as easy to access for everyday use by people without a technical background. For my senior project, I am going to explore the potential for AI tools like natutral language processing and large language models to allow more people to explore data for everyday tasks and questions.</p>
+<p>The final product will be a web app powered by a light-weight model that anyone can upload data to and ask questions about their data, similar to tools like ChatGPT. After some research, I found that tools like this are somewhat integrated into larger softwares like Tableau or Jupyter Notebook, but those require resources and experience to access and use regularly. Alongside the app, I would like to gather and report on feedback from test users.</p>
+<p>With this in mind, I crafted a <a href="proposal.html">proposal</a>, looking at the libraries and concepts necessary to accomplish this. This project will rely heavily on libraries from Hugging Face and TensorFlow as well as Streamlit to create the final application. The main steps towards completing the final project by the end of week 14 are:</p>
+<ol type="1">
+<li>Create the model that powers the app by converting the user’s question into basic Python code to execute on the uploaded data.</li>
+<li>Create the application using Streamlit.</li>
+<li>Deploy the app and gather feedback.</li>
+</ol>
 </section>
-<section id="project-background" class="level3">
-<h3 class="anchored" data-anchor-id="project-background">Project Background</h3>
-<p>I would like to explore how to give more people access to basic data analysis using large language models. At the moment, the tools to be able to view data and use it to answer questions is locked behind expensive tools and steep learning curves. I would love to create a tool to help people without technical backgrounds use data for everyday tasks and questions.</p>
+<section id="initializing-the-model" class="level3">
+<h3 class="anchored" data-anchor-id="initializing-the-model">Initializing the Model</h3>
+<p>The first step is going to be finding and initializing a pre-developed model to start with using transfer-learning. After some research, I found a Hugging Face model called <a href="https://huggingface.co/codeparrot/codeparrot">CodeParrot</a> that looked like a great place to start. Based on GPT-2, CodeParrot is trained on thousands of code entries scraped from web-based tutorials using Python and several supporting libraries. Starting with CodeParrot, I could find additional data better suited for my use-case and train CodeParrot for use in my model.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoTokenizer, AutoModelWithLMHead <span class="co"># Necessary commands from Hugging Face's transformers library</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>pretrained <span class="op">=</span> <span class="st">'codeparrot/codeparrot'</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> AutoTokenizer.from_pretrained(pretrained) <span class="co"># Loading the tokenizer used to pre-process the english inputs for the model.</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> AutoModelWithLMHead.from_pretrained(pretrained) <span class="co"># Loading the actual model.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>However, I ran in to two immediate issues.</p>
+<p>First, the CodeParrot model isn’t compatible with TensorFlow. After trying several methods of transfering the model to TensorFlow, I decided to change my plan and use PyTorch instead going forward.</p>
+<p>Second, the model is too big for my GPU’s memory. After some more research, I found another model called <a href="https://huggingface.co/Salesforce/codegen-350M-mono">codegen-350M-mono</a> from Salesforce, a lighter-weight model with the same purpose of generating Python code from English prompts.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Loading in pre-trained model:</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoModelForCausalLM, AutoTokenizer</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>pretrained <span class="op">=</span> <span class="st">"Salesforce/codegen-350M-mono"</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> AutoTokenizer.from_pretrained(pretrained)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> AutoModelForCausalLM.from_pretrained(pretrained)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Test of initial model:</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>prompt <span class="op">=</span> <span class="st">"Write a NumPy program to repeat elements of an array."</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>inputs <span class="op">=</span> tokenizer(prompt, return_tensors<span class="op">=</span><span class="st">"pt"</span>) <span class="co"># Pre-process the input using the tokenizer from earlier</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>outputs <span class="op">=</span> model.generate(<span class="op">**</span>inputs, max_length<span class="op">=</span><span class="dv">500</span>) <span class="co"># Generate the model's output.</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(tokenizer.decode(outputs[<span class="dv">0</span>], skip_special_tokens<span class="op">=</span><span class="va">True</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre><code># def repeat(arr, n):
+#     for i in range(n):
+#         arr[i] = arr[i] * i
+#     return arr
+
+# arr = [1, 2, 3, 4, 5]
+# n = len(arr)
+# print(repeat(arr, n))</code></pre>
 </section>
-<section id="domain-to-investigate" class="level3">
-<h3 class="anchored" data-anchor-id="domain-to-investigate">Domain to Investigate</h3>
-<section id="llms-and-software-development" class="level5">
-<h5 class="anchored" data-anchor-id="llms-and-software-development">LLMs and Software Development</h5>
-<p>The main topics would be LLM training and deployment using the <a href="https://huggingface.co/docs/transformers/en/index">transformers</a> library from Hugging Face for powerful pretrained models, TensorFlow’s <a href="https://www.tensorflow.org/tfmodels/nlp">models nlp</a> library for training and deployment, Streamlit for the UI, and Hugging Face for hosting the app. For data processing, I’ll start with Polars, but I will switch to <a href="https://www.tensorflow.org/guide/data">tf.data</a> in order to integrate user-uploaded data. For training data, I can use <a href="https://www.kaggle.com/datasets/linkanjarad/coding-problems-and-solution-python-code?resource=download">this dataset</a> from kaggle. I have also had some success using ChatGPT to <a href="https://chatgpt.com/share/678368f8-5344-800e-950d-999372797c26">generate more data</a>, so I can use that as well.</p>
-</section>
-</section>
-<section id="proposed-deliverables" class="level3">
-<h3 class="anchored" data-anchor-id="proposed-deliverables">Proposed Deliverables</h3>
-<p>The main deliverable would be a live app on Hugging Face that people can see and interact with. I would like to have a prototype that uses pre-processed data to answer questions. The user will be able to ask questions based on pre-defined datasets or upload their own data. I would also like to create a report on user-feedback on the live app from people both with and without technical backgrounds.</p>
-<p>Potential data for testing and demonstration:</p>
-<ul>
-<li><a href="https://github.com/CSSEGISandData/COVID-19?tab=readme-ov-file">Covid-19 Data</a></li>
-<li><a href="https://data.worldbank.org/">World Bank Economic Data</a></li>
-<li><a href="https://data.census.gov/">US Census Data (most likely a small subset)</a></li>
-</ul>
-</section>
-<section id="faculty-request" class="level3">
-<h3 class="anchored" data-anchor-id="faculty-request">Faculty Request</h3>
-<p>Brother Hathaway</p>
+<section id="next-steps" class="level3">
+<h3 class="anchored" data-anchor-id="next-steps">Next Steps</h3>
+<p>Now that the model is loaded and working, next I will be working on finding/generating training data and tuning the model to better match our requirements.</p>
 
 
 </section>
