@@ -1,0 +1,69 @@
+---
+title: "Week 1-2: Proposal and First Steps"
+author: "Zach Holcomb"
+date: "2025-01-21"
+categories: [code, analysis]
+image: "image.jpg"
+---
+
+### Proposal Development
+
+An observation that has stuck out to me while studying and practicing data science is how innaccessible most of the tools are for things like analysis or visualization. Locked behind steep learning curves and paywalls, tools that are available to companies and research groups are not as easy to access for everyday use by people without a technical background. For my senior project, I am going to explore the potential for AI tools like natutral language processing and large language models to allow more people to explore data for everyday tasks and questions.
+
+The final product will be a web app powered by a light-weight model that anyone can upload data to and ask questions about their data, similar to tools like ChatGPT. After some research, I found that tools like this are somewhat integrated into larger softwares like Tableau or Jupyter Notebook, but those require resources and experience to access and use regularly. Alongside the app, I would like to gather and report on feedback from test users. 
+
+With this in mind, I crafted a [proposal](proposal.html), looking at the libraries and concepts necessary to accomplish this. This project will rely heavily on libraries from Hugging Face and TensorFlow as well as Streamlit to create the final application. The main steps towards completing the final project by the end of week 14 are:
+
+1. Create the model that powers the app by converting the user's question into basic Python code to execute on the uploaded data.
+2. Create the application using Streamlit.
+3. Deploy the app and gather feedback.
+
+### Initializing the Model
+
+The first step is going to be finding and initializing a pre-developed model to start with using transfer-learning. After some research, I found a Hugging Face model called [CodeParrot](https://huggingface.co/codeparrot/codeparrot) that looked like a great place to start. Based on GPT-2, CodeParrot is trained on thousands of code entries scraped from web-based tutorials using Python and several supporting libraries. Starting with CodeParrot, I could find additional data better suited for my use-case and train CodeParrot for use in my model.
+
+```python
+from transformers import AutoTokenizer, AutoModelWithLMHead # Necessary commands from Hugging Face's transformers library
+
+pretrained = 'codeparrot/codeparrot'
+tokenizer = AutoTokenizer.from_pretrained(pretrained) # Loading the tokenizer used to pre-process the english inputs for the model.
+model = AutoModelWithLMHead.from_pretrained(pretrained) # Loading the actual model.
+```
+
+However, I ran in to two immediate issues.
+
+First, the CodeParrot model isn't compatible with TensorFlow. After trying several methods of transfering the model to TensorFlow, I decided to change my plan and use PyTorch instead going forward.
+
+Second, the model is too big for my GPU's memory. After some more research, I found another model called [codegen-350M-mono](https://huggingface.co/Salesforce/codegen-350M-mono) from Salesforce, a lighter-weight model with the same purpose of generating Python code from English prompts. 
+
+```python
+# Loading in pre-trained model:
+
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+pretrained = "Salesforce/codegen-350M-mono"
+tokenizer = AutoTokenizer.from_pretrained(pretrained)
+model = AutoModelForCausalLM.from_pretrained(pretrained)
+
+# Test of initial model:
+
+prompt = "Write a NumPy program to repeat elements of an array."
+inputs = tokenizer(prompt, return_tensors="pt") # Pre-process the input using the tokenizer from earlier
+outputs = model.generate(**inputs, max_length=500) # Generate the model's output.
+print(tokenizer.decode(outputs[0], skip_special_tokens=True))
+```
+
+```
+# def repeat(arr, n):
+#     for i in range(n):
+#         arr[i] = arr[i] * i
+#     return arr
+
+# arr = [1, 2, 3, 4, 5]
+# n = len(arr)
+# print(repeat(arr, n))
+```
+
+### Next Steps
+
+Now that the model is loaded and working, next I will be working on finding/generating training data and tuning the model to better match our requirements.

@@ -1,5 +1,5 @@
 ---
-title: "remove"
+title: "Zach Holcomb Senior Project 2025: Data Analysis AI"
 listing:
   contents: posts
   sort: "date desc"

@@ -1,0 +1,33 @@
+---
+title: "Zach Holcomb Project Proposal"
+---
+
+### Personal Background
+
+I finished MATH 425 in spring 2024 and CS 450 and MATH 488 in fall 2024. After I graduate, I hope to get a job as a strategic analyst within 3-5 years. Working anywhere as a strategic analyst is what I would like to make into my career, though I would prefer to eventually get into law enforcement or government intelligence.
+
+School email: holcombzv@byui.edu
+
+### Project Background
+
+I would like to explore how to give more people access to basic data analysis using large language models. At the moment, the tools to be able to view data and use it to answer questions is locked behind expensive tools and steep learning curves. I would love to create a tool to help people without technical backgrounds use data for everyday tasks and questions.
+
+### Domain to Investigate
+
+##### LLMs and Software Development
+
+The main topics would be LLM training and deployment using the [transformers](https://huggingface.co/docs/transformers/en/index) library from Hugging Face for powerful pretrained models, TensorFlow's [models nlp](https://www.tensorflow.org/tfmodels/nlp) library for training and deployment, Streamlit for the UI, and Hugging Face for hosting the app. For data processing, I'll start with Polars, but I will switch to [tf.data](https://www.tensorflow.org/guide/data) in order to integrate user-uploaded data. For training data, I can use [this dataset](https://www.kaggle.com/datasets/linkanjarad/coding-problems-and-solution-python-code?resource=download) from kaggle. I have also had some success using ChatGPT to [generate more data](https://chatgpt.com/share/678368f8-5344-800e-950d-999372797c26), so I can use that as well.
+
+### Proposed Deliverables
+
+The main deliverable would be a live app on Hugging Face that people can see and interact with. I would like to have a prototype that uses pre-processed data to answer questions. The user will be able to ask questions based on pre-defined datasets or upload their own data. I would also like to create a report on user-feedback on the live app from people both with and without technical backgrounds.
+
+Potential data for testing and demonstration:
+
+* [Covid-19 Data](https://github.com/CSSEGISandData/COVID-19?tab=readme-ov-file)
+* [World Bank Economic Data](https://data.worldbank.org/)
+* [US Census Data (most likely a small subset)](https://data.census.gov/)
+
+### Faculty Request
+
+Brother Hathaway
