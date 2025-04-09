@@ -1,5 +1,5 @@
 ---
-title: "Week 1-2: Proposal and First Steps"
+title: "A Crash Course on Entity Embedding"
 author: "Zach Holcomb"
 date: "2025-04-08"
 categories: [code, machine learning]
