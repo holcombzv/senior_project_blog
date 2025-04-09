@@ -1,0 +1,210 @@
+---
+title: "Week 3-4: Model Creation"
+author: "Zach Holcomb"
+date: "2025-02-03"
+categories: [code, analysis]
+image: "image.jpg"
+---
+
+```{python}
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import os
+import torch
+
+# Load the model and tokenizer
+pretrained = "Salesforce/codegen-350M-mono"
+tokenizer = AutoTokenizer.from_pretrained(pretrained)
+model = AutoModelForCausalLM.from_pretrained(pretrained)
+```
+
+## Model Difficulties
+
+Much of my time these weeks was spent wrestling with the model to be able to run the training on my limited hardware. The main difficulties were the limited memory of my GPU and the time it took to train. I implemented several methods to help with one or both of these issues.
+
+### Layer Freezing
+
+One popular technique when using transfer learning is **layer freezing**. When training a neural network, the weights of all of the various nodes are being adjusted based on the training data. When using a pretrained model as we are with the codegen model, it is often unnecessary to adjust all of the nodes, especially the nodes closer to the input. 
+
+```{python}
+from torchinfo import summary
+
+summary(model, input_size=(1, 128), dtypes=[torch.long])
+```
+
+Looking at the model, we can see that after the input and dropout layers, there are 20 layers of transformation nodes. These layers will have already been tuned by the developers of the model, so we can freeze some of these layers to save us time and resources. For now, we will freeze the first half (10) transformation layers as well as the input embedding layer.
+
+```python
+# Freeze the embedding layer
+for param in model.base_model.wte.parameters():
+    param.requires_grad = False
+
+# Freeze the first 10 transformer blocks
+for layer in model.base_model.h[:10]:
+    for param in layer.parameters():
+        param.requires_grad = False
+```
+
+### Pruning
+
+This model was created to generate a variety of Python code that we don't need for our task. This allows us to "prune" or shrink the layers to a more reasonable size. This will speed up training immensely at the potential cost of performance. For now I am pruning the transformatioon layers to half their original size, meaning that there are still 20 transformation layers, but they are all half as big as before. I may change this later if the performance is not meeting expectations.
+
+```python
+# Pruning
+
+import torch.nn.utils.prune as prune
+
+def prune_model(model, amount=0.3):
+    """
+    Prunes the attention and MLP layers of CodeGenForCausalLM.
+    
+    Parameters:
+    - model: CodeGenForCausalLM model instance
+    - amount: Fraction of weights to prune (e.g., 0.3 means 30% of small weights are pruned)
+    """
+    for block in model.transformer.h:
+        # Prune attention layers
+        prune.l1_unstructured(block.attn.qkv_proj, name="weight", amount=amount)
+        prune.l1_unstructured(block.attn.out_proj, name="weight", amount=amount)
+
+        # Prune MLP layers
+        prune.l1_unstructured(block.mlp.fc_in, name="weight", amount=amount)
+        prune.l1_unstructured(block.mlp.fc_out, name="weight", amount=amount)
+
+prune_model(model, amount=0.5)
+
+def remove_pruning(model):
+    """Removes pruning reparameterization to free up memory."""
+    for block in model.transformer.h:
+        prune.remove(block.attn.qkv_proj, "weight")
+        prune.remove(block.attn.out_proj, "weight")
+        prune.remove(block.mlp.fc_in, "weight")
+        prune.remove(block.mlp.fc_out, "weight")
+
+remove_pruning(model)
+```
+
+### LoRa
+
+While researching these methods to save time and memory, I came across a technique reffered to as **Low-Rank Adaptation(LoRa)**. LoRa is a method used during the training process of larger pretrained models. LoRa basiccally tells the trainer to prioritize lower-weight parameters. This helps the model to retain its original potency while being trained for more specific tasks. Using LoRa makes our previous modifications to the model somewhat redundant, but every little bit helps.
+
+Applying LoRa to our model is very straightforward. Rather than manually telling LoRa what layers to modify like we had to for freezing and pruning, LoRa automatically determines which layer parameters to modify. The main parameters that we are concerned with are r, lora_alpha, and lora_dropout. Changing these can help improve tarining time at the cost of adaptability and performance.
+
+``` python
+# create LoRa model
+lora_config = LoraConfig(
+    r=8, # Affects size and training efficency of model. Low values(1-8) limit the size of the model during training, but model will have a harder time adapting to new tasks.
+    lora_alpha=32, # Affects the model's ability to retain previous weights. Low values (1-16) causesthe new weights to be less impactful, creating a model closer to the original.
+    lora_dropout=0.1, # Acts in a similar fashion to a dropout layer during training. Removes some of the weights for each step, preventing the model from relying too much on a single node. This is used to combat overfitting during training.
+    bias="none",
+    task_type=TaskType.CAUSAL_LM
+)
+
+model = get_peft_model(model, lora_config)
+```
+
+
+## Training
+
+After applying all of these techniques, I am now able to start a training workflow to tune hyperparamters. Training still takes a long time, about 30-40 minutes per epoch, so I won't be able to make changes quickly. My plan going forward is to start work on the web app while the model trains. 
+
+```python
+# Prepare data for training:
+batch_size=4
+
+from sklearn.model_selection import train_test_split
+train_data = df[['Problem', 'Python Code']].dropna()
+X = df['Problem']
+y = df['Python Code']
+
+train_inputs, val_inputs, train_outputs, val_outputs = train_test_split(
+    X,
+    y,
+    test_size = .2,
+    random_state = 42
+)
+
+def tokenize_inputs(values):
+    tokenizer.pad_token = tokenizer.eos_token
+    tokenized = tokenizer(values.astype(str).tolist(), padding="max_length", max_length = 250, truncation=True, return_tensors="pt")
+    return tokenized
+
+train_inputs_tokenized = tokenize_inputs(train_inputs)
+val_inputs_tokenized = tokenize_inputs(val_inputs)
+
+train_outputs_tokenized = tokenize_inputs(train_outputs)
+val_outputs_tokenized = tokenize_inputs(val_outputs)
+
+from datasets import Dataset
+
+# Create a dataset
+train_dataset = Dataset.from_dict({
+    'input_ids': train_inputs_tokenized['input_ids'],
+    'attention_mask': train_inputs_tokenized['attention_mask'],
+    'labels': train_outputs_tokenized['input_ids'], 
+}).with_format(type='torch')
+
+# Prepare validation dataset
+val_dataset = Dataset.from_dict({
+    'input_ids': val_inputs_tokenized['input_ids'],
+    'attention_mask': val_inputs_tokenized['attention_mask'],
+    'labels': val_outputs_tokenized['input_ids'],
+}).with_format(type='torch')
+
+from torch.utils.data import DataLoader
+train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
+val_dataloader = DataLoader(val_dataset, batch_size=batch_size, num_workers=4, pin_memory=True)
+#%%
+# Train model using LoRa
+from peft import LoraConfig, get_peft_model, TaskType
+from transformers import TrainingArguments, Trainer
+
+# create LoRa model
+lora_config = LoraConfig(
+    r=8, 
+    lora_alpha=32, 
+    lora_dropout=0.1, 
+    bias="none",
+    task_type=TaskType.CAUSAL_LM
+)
+
+model = get_peft_model(model, lora_config)
+
+# Define a custom trainer class to use DataLoader
+class CustomTrainer(Trainer):
+    def get_train_dataloader(self):
+        # Return your custom train dataloader
+        return train_dataloader
+    
+    def get_eval_dataloader(self, eval_dataset=None):
+        # Return your custom eval dataloader
+        return val_dataloader
+
+# tune on data
+training_args = TrainingArguments(
+    output_dir="./fine_tuned_model",
+    per_device_train_batch_size=batch_size,
+    per_device_eval_batch_size=batch_size,
+    gradient_accumulation_steps=2,
+    eval_strategy="epoch",  # Evaluation happens after every epoch
+    save_strategy="epoch",       # Save model after every epoch
+    logging_steps=10,
+    learning_rate=2e-5,
+    weight_decay=0.01,
+    fp16=True,  # Use mixed precision
+    num_train_epochs=8,
+    save_total_limit=2,
+    report_to="none"
+)
+
+# Create the custom trainer
+trainer = CustomTrainer(
+    model=model,
+    args=training_args,
+    train_dataset=train_dataset,
+    eval_dataset=val_dataset, 
+)
+
+# Start training
+torch.cuda.empty_cache()
+trainer.train()
+```

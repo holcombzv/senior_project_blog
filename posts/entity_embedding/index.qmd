@@ -1,0 +1,21 @@
+---
+title: "Week 1-2: Proposal and First Steps"
+author: "Zach Holcomb"
+date: "2025-04-08"
+categories: [code, machine learning]
+image: "image.jpg"
+---
+
+### What is Entity Embedding
+
+While working on my model, I was concerned about overtraining my model on the datasets I was using for training. What I realized I needed was a way to train my model in a way that the vocabulary of the model didn't need to include the names of the columns in the dataset the model is being used to analyze. After some research, I came across a technique used for neural networks called entity embedding.
+
+Entity embedding is a more complicated verison of label encoding, used to solve this issue for smaller models used for categorical problems. Label encoding invloves taking categorical variables and replacing them with a set of numerical values that the model learns how to use regardless of what the values correspond to. For example, in my example, I want to encode the column names of a dataset. So, instead of passing the column name "date" to the model, label encoding would turn "date" into the value 1, for the first column. Other columns would translate to other unique values. Then, once the model runs and a result is given, the values are switched back to their categorical values. So 1 becomes "date" again. 
+
+This works well for simpler tree-based models. The issue with this method is that a lot of context is lot in translating each value to a single number. In our example, the model doesn't know anything about the column 1 other than it is a column in the data. The use of numeric values can also introduce faulty relationships, such as 1 > 2, that we don't want our model to rely on. Entity embedding solves these problems by using vectors instead of single values. The model trains itself to derive meaning from each value in the vectors, solving the issues of unwanted relationships and data loss by creating purposeful relationships that allow the model to be both flexible and complex enough for larger machine learning models like neural networks. 
+
+### Implementing Entity Embedding to our Model
+
+To improve the model’s understanding of the relationship between user queries and the structure of the underlying data, I implemented entity embedding for column names. This was done by creating a 'ColumnNameEmbedder' module that maps each unique column name to a vector. This process of translating our categorical column names to numeric vectors is refined during training. During this process, the embedded column names are put through the same pre-processing transformations as the initial query, which come from our pretrained SalesForce model codegen-350M-mono. To fuse both sources of information, I designed a function to concatenate the token-level query embeddings, or the normal input to the model, with the corresponding column name embeddings across time steps. This combined embedding is then fed into an LSTM layer, allowing the model to capture interactions between the input query and the data being referenced. 
+
+After adding this, I noticed a drop in performance at the start of training. This makes sense since the model has to adjust to this new input structure. I wasn’t able to train long enough to see if this early drop leads to better results later on. In theory, this setup should improve the model’s flexibility and reduce overfitting by making it better at picking up complex patterns between queries and column names.
